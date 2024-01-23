@@ -10,6 +10,7 @@ def operator_blacklist():
     with open(operator_list, 'r') as f:
         operators_status = json.load(f)
         blacklist = []
+        errors = []
         for op in operators_status["operators"]:
             if op["status"] == 'Blacklist':
                 blacklist.append(op['operator'])
@@ -17,13 +18,15 @@ def operator_blacklist():
         for dag_id, dag in dagbag.dags.items():
             query = Query(dag)
             blacklist = query.filter(blacklist).execute(False)
-
-        assert len(blacklist) == 0, f"Unauthorized operators found in DAG. Please replace the following operators: {blacklist}"
+            if len(blacklist) == 0:
+                errors.append(f"Unauthorized operators found in {dag_id}. Please replace the following operators: {blacklist}")
+        assert not errors,  "Dags used unauthorized operators:\n{}".format("\n".join(errors))
 
 def operator_whitelist():
     operator_list = "operator_list.json"
     dagbag = DagBag()
     whitelist = []
+    errors = []
     for op in operators_status["operators"]:
         if op["status"] == 'Whitelist':
             whitelist.append(op['operator'])
@@ -34,4 +37,6 @@ def operator_whitelist():
     for dag_id, dag in dagbag.dags.items():
         query = Query(dag)
         unauthorized_operators = query.filter(is_unauthorized_operator).execute(False)
-        assert len(unauthorized_operators) == 0, f"Unauthorized operators found in {dag_id}. Please replace the following operators: {unauthorized_operators}"
+        if len(unauthorized_operators) == 0:
+            errors.append(f"Unauthorized operators found in {dag_id}. Please replace the following operators: {unauthorized_operators}")
+        assert not errors,  "Dags used unauthorized operators:\n{}".format("\n".join(errors))
