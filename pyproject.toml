@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "airflow_test"
+version = "0.0.1"
+description = ""
+authors = ["Your Name <your-email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.plugins."airflow.cluster_policy"]
+cluster_policy = "airflow_test.cluster_policies"
