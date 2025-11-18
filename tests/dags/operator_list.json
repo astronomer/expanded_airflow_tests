@@ -2,11 +2,11 @@
   "operators":[
     {
         "operator": "PythonOperator",
-        "status": "Allowlist"
+        "status": "allowlist"
     },
     {
         "operator": "SQLOperator",
-        "status": "Denylist"
+        "status": "denylist"
     },
     {
         "operator": "PostgresOperator",
