@@ -3,34 +3,34 @@ from bowler import Query
 import json
 from fissix.pytree import Leaf
 
-def provider_blacklist_policy(dag):
+def provider_deny_policy(dag):
     operator_list = "operator_list.json"
     with open(operator_list, 'r') as f:
         operators_status = json.load(f)
-        blacklist = []
+        denylist = []
     for op in operators_status["operators"]:
-        if op["status"] == 'Blacklist':
-            blacklist.append(op['operator'])
+        if op["status"] == 'Denylist':
+            denylist.append(op['operator'])
 
     query = Query(dag)
-    blacklist = query.filter(blacklist).execute(False)
-    if len(blacklist) == 0:
+    denylist = query.filter(denylist).execute(False)
+    if len(denylist) == 0:
         raise AirflowClusterPolicyViolation(
-            f"Unauthorized operators found in {dag}. Please replace the following operators: {blacklist}"
+            f"Unauthorized operators found in {dag}. Please replace the following operators: {denylist}"
         )
 
-def provider_whitelist_policy(dag):
+def provider_allowlist_policy(dag):
     operator_list = "operator_list.json"
-    whitelist = []
+    allowlist = []
     errors = []
     with open(operator_list, 'r') as f:
         operators_status = json.load(f)
         for op in operators_status["operators"]:
-            if op["status"] == 'Whitelist':
-                whitelist.append(op['operator'])
+            if op["status"] == 'allowlist':
+                allowlist.append(op['operator'])
 
     def is_unauthorized_operator(node):
-        return isinstance(node, Leaf) and node.value.endswith('Operator') and node.value not in whitelist
+        return isinstance(node, Leaf) and node.value.endswith('Operator') and node.value not in allowlist
 
     query = Query(dag)
     unauthorized_operators = query.filter(is_unauthorized_operator).execute(False)
